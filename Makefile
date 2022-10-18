@@ -7,4 +7,3 @@ $(exec): $(objects)
 	gcc $(objects) $(flags) -o $(exec)
 %.o: %.c include/%.h
 	gcc -c $(flags) $< -o $@
-	

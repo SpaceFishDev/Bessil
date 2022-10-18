@@ -10,10 +10,10 @@ enum opcodes{
 	LONG,
 };
 
-typedef struct INS{
+typedef struct instruction{
 	int type;
 	string_view* data;
-	instruction* arguments;
+	struct instruction** arguments;
 } instruction;
 
 instruction* init_instruction(int type, string_view* data);
