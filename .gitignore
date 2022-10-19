@@ -1,0 +1,7 @@
+.vs
+.git
+*.sln
+*.csproj
+BessilLanguage/obj/
+BessilLanguage/bin/
+
