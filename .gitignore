@@ -1,7 +1,5 @@
-.vs
-.git
 *.sln
-*.csproj
-BessilLanguage/obj/
-BessilLanguage/bin/
+./BessilLanguage/BessilLanguage.csproj
+./BessilLanguage/obj/
+./BessilLanguage/bin/
 
