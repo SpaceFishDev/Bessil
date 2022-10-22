@@ -11,7 +11,6 @@ void lexer_next(lexer_info* linfo){
 		linfo->current = '\0';
 		return;
 	}
-
 	linfo->position += 1;
 	linfo->current = at(linfo->source, linfo->position);
 }
@@ -26,6 +25,11 @@ lexer_info* init_lexer_info(string_view* source){
 }
 
 token_info* lex(lexer_info* lexer){
+	if(lexer->current == '#'){
+		while(lexer->current  != '\n')
+			lexer_next(lexer);
+		return lex(lexer);
+	}
 	if((lexer->current >= 'a' && lexer->current <= 'z') || (lexer->current >= 'A' && lexer->current <= 'Z')){
 		int start = lexer->position;
 		while((lexer->current >= 'a' && lexer->current <= 'z') || (lexer->current >= 'A' && lexer->current <= 'Z')){
@@ -122,4 +126,3 @@ token_info* lex(lexer_info* lexer){
 	end:
 	return init_token_info( TOKEN_ENDOFFILE, STR("\0"));
 }
-
