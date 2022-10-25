@@ -52,9 +52,19 @@ namespace BessilLanguage
                         {
                             return new Token(TokenType.TOKEN_LONG, data, line);
                         }
+                    case "null":
+                    case "NULL":
+                    case "nill":
+                        {
+                            return new Token(TokenType.TOKEN_NULL, null, line);
+                        }
                     case "int":  // 32 bit
                         {
                             return new Token(TokenType.TOKEN_INT, data, line);
+                        }
+                    case "return":
+                        {
+                            return new Token(TokenType.TOKEN_RETURN, data, line);
                         }
                 }
                 return new Token(TokenType.TOKEN_ID, data, line);
@@ -62,8 +72,20 @@ namespace BessilLanguage
             if (char.IsDigit(current))
             {
                 int start = position;
-                while(char.IsDigit(current))
+                int nx = 0;
+                while(char.IsDigit(current) || current == 'x' || (( current >= 'A' && current <= 'F' || current >= 'a' && current <= 'f') && nx > 0 ))
                 {
+                    if(current == 'x')
+                    {
+                        ++nx;
+                        if(nx > 1)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"Lexer expected Token: EXPR. The lexer was given was Token: EXPR Token: ID, letter was placed within expression. LN : {line}");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Environment.Exit(-1);
+                        }
+                    }
                     next();
                 }
                 if (char.IsLetter(current))
@@ -74,6 +96,10 @@ namespace BessilLanguage
                     Environment.Exit(-1);
                 }
                 int end = position;
+                if(nx > 0)
+                {
+                    return new Token(TokenType.TOKEN_EXPR, int.Parse( source.Substring(start, end - start).Replace("0x", ""), System.Globalization.NumberStyles.HexNumber), line);
+                }
                 return new Token(TokenType.TOKEN_EXPR, int.Parse(source.Substring(start, end - start)), line);
             }
             if(current == '\n')
@@ -102,7 +128,6 @@ namespace BessilLanguage
                 case '-':
                     {
                         next();
-                        bool previous = false;
                         if (position - 2 > 0)
                         {
 
@@ -177,12 +202,12 @@ namespace BessilLanguage
                 case '{':
                     {
                         next();
-                        return new Token(TokenType.TOKEN_OBRACKET, "{", line);
+                        return new Token(TokenType.TOKEN_BEGIN, "{", line);
                     }
                 case '}':
                     {
                         next();
-                        return new Token(TokenType.TOKEN_CBRACKET, "}", line);
+                        return new Token(TokenType.TOKEN_END, "}", line);
                     }
             }
             Console.WriteLine($"Bad character in input: {current}");

@@ -4,14 +4,21 @@
     {
         public Node left;
         public Node right;
-        bool add;
-        public BinaryExpressionNode(Node left, Node right, bool plus)
+        int type;
+        public enum t{
+            ADD,
+            SUB,
+            MUL,
+            DIV,
+        }
+        public BinaryExpressionNode(Node left, Node right, t type)
         {
+            string data = "+-*/";
             this.left = left;
             this.right = right;
-            add = plus;
-            Class = (add) ? NodeClass.add : NodeClass.sub;
-            Value = (add) ? "+" : "-";
+            this.type =(int)type;
+            Class = (NodeClass)type;
+            Value = data[(int)Class].ToString();
         }
         public override IEnumerable<Node> GetChildren()
         {

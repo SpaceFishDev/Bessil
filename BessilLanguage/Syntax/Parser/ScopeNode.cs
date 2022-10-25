@@ -1,8 +1,9 @@
 ﻿namespace BessilLanguage
 {
-    public sealed class ScopeNode : Node
+    public class ScopeNode : Node
     {
         public List<Node> children;
+        public Node Root;
         public ScopeNode(string title)
         {
             this.Class = NodeClass.scope;

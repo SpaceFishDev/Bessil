@@ -2,10 +2,15 @@
 {
     public enum NodeClass
     {
-        scope,
         add,
         sub,
+        mul,
+        div,
+        scope,
         constant,
         call,
+        var,
+        paren,
+        function,
     }
 }

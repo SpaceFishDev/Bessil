@@ -18,8 +18,8 @@ namespace BessilLanguage
 		TOKEN_ENDOFFILE,
 		TOKEN_OPAREN,
 		TOKEN_CPAREN,
-		TOKEN_OBRACKET,
-		TOKEN_CBRACKET,
+		TOKEN_BEGIN,
+		TOKEN_END,
 		TOKEN_SEMI,
 		TOKEN_EQ,
 		TOKEN_FUNC,
@@ -28,7 +28,9 @@ namespace BessilLanguage
 		TOKEN_INT,
 		TOKEN_LONG,
 		BAD_TOKEN,
-	}
+        TOKEN_NULL,
+        TOKEN_RETURN,
+    }
     public class Token
     {
         public TokenType type;
