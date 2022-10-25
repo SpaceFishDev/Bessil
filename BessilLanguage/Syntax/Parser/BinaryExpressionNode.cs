@@ -1,6 +1,6 @@
 ﻿namespace BessilLanguage
 {
-    public sealed class BinaryExpressionNode : Node
+    public class BinaryExpressionNode : Node
     {
         public Node left;
         public Node right;
@@ -10,10 +10,11 @@
             SUB,
             MUL,
             DIV,
+            ASSIGN,
         }
         public BinaryExpressionNode(Node left, Node right, t type)
         {
-            string data = "+-*/";
+            string data = "+-*/=";
             this.left = left;
             this.right = right;
             this.type =(int)type;

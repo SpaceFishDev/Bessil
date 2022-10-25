@@ -24,7 +24,8 @@ namespace BessilLanguage
             }
             if (current == '#')
             {
-                next();
+                while(current != '\n')
+                    next();
                 return lex();
             }
             if (char.IsLetter(current))

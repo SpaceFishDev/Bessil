@@ -463,6 +463,35 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
+                    case TokenType.TOKEN_ID:
+                        {
+                            if(root.Class == NodeClass.function)
+                            {
+                                if((root as FunctionNode).ReturnDefine)
+                                {
+                                    ((root as FunctionNode).ReturnValue as VariableNode).Data = new ConstantNode(token.value);
+                                    return parse_r(
+                                        root, 
+                                        root, 
+                                        index + 1
+                                    );
+                                }
+                            }
+                            if (tokens[index + 1].type == TokenType.TOKEN_EQ)
+                            {
+                                if (tokens[index + 2].type == TokenType.TOKEN_ID)
+                                {
+                                    BinaryExpressionNode node = new BinaryExpressionNode(
+                                        new ConstantNode(token.value),
+                                        new ConstantNode(tokens[index + 2].value),
+                                        BinaryExpressionNode.t.ASSIGN
+                                    );
+                                    (root as ScopeNode).AddChild(node);
+                                    return parse_r(root, node, index + 3);
+                                }
+                            }
+                            return null;
+                        }
                     default:
                         {
                             ++index;
