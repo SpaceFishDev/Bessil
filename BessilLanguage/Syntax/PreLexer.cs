@@ -8,7 +8,7 @@ namespace BessilLanguage
 {
     internal class PreLexer
     {
-        public static string includes(string source)
+        public static string includes(string source, List<string> include_paths)
         {
             source = source.Replace("\r\n", "\n");
             int i = 0;
@@ -26,9 +26,10 @@ namespace BessilLanguage
                     catch
                     {
                         Console.WriteLine($"Could not read source file: {path}");
+                        Environment.Exit(-1);
                     }
                     source = source.Replace(line, src);
-                    return includes(source);
+                    return includes(source, include_paths);
                 }
             }
             Console.WriteLine(source);
