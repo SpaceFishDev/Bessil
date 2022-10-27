@@ -4,7 +4,7 @@
     {
         static void Main(string[] Args)
         {
-            string input = PreLexer.includes(File.ReadAllText("main.bsl"), new List<string>());
+            string input = PreLexer.includes(File.ReadAllText("main.bsl"));
             Parser parser = new Parser(input);
             Node root = parser.parse();
             PrettyPrint(root);

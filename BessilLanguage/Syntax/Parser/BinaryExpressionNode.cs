@@ -12,6 +12,8 @@
             DIV,
             ASSIGN,
             BOOLEQ,
+            BOOLLESS,
+            BOOLMORE,
             VARADD,
             VARSUB,
             VARMUL,
@@ -20,7 +22,7 @@
         public BinaryExpressionNode(Node left, Node right, t type, int line)
         {
             Line = line;
-            string data = "+-*/=?asmd";
+            string[] data = {"+", "-", "*", "/", "=", "==", "<", ">", "v+", "v-", "v*","v/" };
             this.left = left;
             this.right = right;
             this.type =(int)type;

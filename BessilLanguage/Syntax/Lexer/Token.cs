@@ -14,6 +14,9 @@ namespace BessilLanguage
 		TOKEN_MINUS,
 		TOKEN_STAR,
 		TOKEN_SLASH,
+        TOKEN_BOOLEQ,
+        TOKEN_MORE,
+        TOKEN_LESS,
 		TOKEN_STRING,
 		TOKEN_ENDOFFILE,
 		TOKEN_OPAREN,
@@ -30,7 +33,6 @@ namespace BessilLanguage
 		BAD_TOKEN,
         TOKEN_NULL,
         TOKEN_RETURN,
-        TOKEN_BOOLEQ,
     }
     public class Token
     {

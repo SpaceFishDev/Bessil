@@ -215,6 +215,16 @@ namespace BessilLanguage
                         next();
                         return new Token(TokenType.TOKEN_COMMA, ",", line);
                     }
+                case '>':
+                    {
+                        next();
+                        return new Token(TokenType.TOKEN_MORE, ">", line);
+                    }
+                case '<':
+                    {
+                        next();
+                        return new Token(TokenType.TOKEN_LESS, ">", line);
+                    }
             }
             Console.WriteLine($"Bad character in input: {current}");
             Environment.Exit(-1);

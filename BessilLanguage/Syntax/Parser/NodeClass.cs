@@ -8,6 +8,8 @@
         div,
         assign,
         bool_eq,
+        bool_more,
+        bool_less,
         var_add,
         var_sub,
         var_mul,
