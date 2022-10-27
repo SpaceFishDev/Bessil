@@ -30,6 +30,7 @@ namespace BessilLanguage
 		BAD_TOKEN,
         TOKEN_NULL,
         TOKEN_RETURN,
+        TOKEN_BOOLEQ,
     }
     public class Token
     {

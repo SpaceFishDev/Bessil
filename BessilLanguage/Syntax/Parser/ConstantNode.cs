@@ -2,10 +2,11 @@
 {
     public sealed class ConstantNode : Node
     {
-        public ConstantNode(object value)
+        public ConstantNode(object value, int line)
         {
             Class = NodeClass.constant;
             Value = value;
+            Line = line;
         }
         public override IEnumerable<Node> GetChildren()
         {

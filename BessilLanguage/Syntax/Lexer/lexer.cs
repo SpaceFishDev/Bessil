@@ -167,11 +167,6 @@ namespace BessilLanguage
                         next();
                         return new Token(TokenType.TOKEN_SLASH, "/", line);
                     }
-                case ',':
-                    {
-                        next();
-                        return new Token(TokenType.TOKEN_COMMA, ",", line);
-                    }
                 case '\'':
                 case '"':
                     {
@@ -188,6 +183,11 @@ namespace BessilLanguage
                 case '=':
                     {
                         next();
+                        if(current == '=')
+                        {
+                            next();
+                            return new Token(TokenType.TOKEN_BOOLEQ, "==", line);
+                        }
                         return new Token(TokenType.TOKEN_EQ, "=", line);
                     }
                 case '(':
@@ -209,6 +209,11 @@ namespace BessilLanguage
                     {
                         next();
                         return new Token(TokenType.TOKEN_END, "}", line);
+                    }
+                case ',':
+                    {
+                        next();
+                        return new Token(TokenType.TOKEN_COMMA, ",", line);
                     }
             }
             Console.WriteLine($"Bad character in input: {current}");

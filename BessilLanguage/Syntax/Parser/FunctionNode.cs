@@ -20,11 +20,11 @@ namespace BessilLanguage
             @int,
         }
         public ReturnTypes ReturnType;
-        public FunctionNode(string title, ReturnTypes returnType) : base(title)
+        public FunctionNode(string title, ReturnTypes returnType, int line) : base(title, line)
         {
             Class = NodeClass.function;
             ReturnType = returnType;
-            Arguments = new ScopeNode(title + ":Arguments");
+            Arguments = new ScopeNode(title + ":Arguments", line);
         }
         public override IEnumerable<Node> GetChildren()
         {

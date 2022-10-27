@@ -4,7 +4,7 @@
     {
         static void Main(string[] Args)
         {
-            string input = File.ReadAllText("main.bsl");
+            string input = PreLexer.includes(File.ReadAllText("main.bsl"));
             Parser parser = new Parser(input);
             Node root = parser.parse();
             PrettyPrint(root);
@@ -16,7 +16,7 @@
                 return;
             for (int i = 0; i < level; ++i, Console.Write("\t")) ;
             if (root.Class == NodeClass.var)
-            {
+            {   
                 Console.WriteLine($"NODE( {root.Class}, {(root as VariableNode).Type}, {root.Value})");
             }
             else
@@ -25,7 +25,7 @@
             }
             ++level;
             foreach (Node Child in root.GetChildren())
-            {
+            {   
                 PrintR(Child, level);
             }
         }

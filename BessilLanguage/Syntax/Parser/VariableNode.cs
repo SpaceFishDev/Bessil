@@ -15,12 +15,13 @@ namespace BessilLanguage
             @int,
         }
         public VariableClass Type;
-        public VariableNode(string title, VariableClass @class, Node data)
+        public VariableNode(string title, VariableClass @class, Node data, int line)
         {
             this.Value = title;
             this.Type = @class;
             this.Class = NodeClass.var;
             Data = data;
+            Line = line;
         }
 
         public override IEnumerable<Node> GetChildren()

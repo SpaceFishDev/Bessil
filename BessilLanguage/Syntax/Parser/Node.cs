@@ -10,6 +10,7 @@ namespace BessilLanguage
     {
         public NodeClass Class;
         public object Value;
+        public int Line;
         public abstract IEnumerable<Node> GetChildren();
     }
 }

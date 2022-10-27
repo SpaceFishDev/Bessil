@@ -11,10 +11,16 @@
             MUL,
             DIV,
             ASSIGN,
+            BOOLEQ,
+            VARADD,
+            VARSUB,
+            VARMUL,
+            VARDIV,
         }
-        public BinaryExpressionNode(Node left, Node right, t type)
+        public BinaryExpressionNode(Node left, Node right, t type, int line)
         {
-            string data = "+-*/=";
+            Line = line;
+            string data = "+-*/=?asmd";
             this.left = left;
             this.right = right;
             this.type =(int)type;
