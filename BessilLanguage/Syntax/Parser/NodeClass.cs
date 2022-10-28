@@ -14,6 +14,8 @@
         var_sub,
         var_mul,
         var_div,
+        bool_more_eq,
+        bool_less_eq,
         scope,
         constant,
         call,

@@ -1,13 +1,21 @@
-﻿namespace BessilLanguage
+﻿using System.Diagnostics;
+
+namespace BessilLanguage
 {
     class Program
     {
         static void Main(string[] Args)
         {
+           
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             string input = PreLexer.includes(File.ReadAllText("main.bsl"));
             Parser parser = new Parser(input);
             Node root = parser.parse();
             PrettyPrint(root);
+            sw.Stop();
+            Console.WriteLine($"Parse Time: {sw.Elapsed.TotalMilliseconds} ms");
+            Console.ReadKey ();
         }
 
         static void PrintR(Node root, int level)

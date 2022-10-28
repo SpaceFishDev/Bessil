@@ -1,7 +1,5 @@
-
-func main byte 
-byte argc 
-byte argv 
-{		
-	int a = a > b;
-}	
+func main int 
+int argc
+byte argv{
+	printf("Ya mom gay lol\n");
+}

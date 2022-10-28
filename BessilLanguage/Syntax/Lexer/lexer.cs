@@ -48,8 +48,11 @@ namespace BessilLanguage
                         {
                             return new Token(TokenType.TOKEN_BYTE, data, line);
                         }
-                    case "lint":
-                    case "long_int": // 64 bit
+                    case "short":
+                        {
+                            return new Token(TokenType.TOKEN_SHORT, data, line);
+                        }
+                    case "long": // 64 bit
                         {
                             return new Token(TokenType.TOKEN_LONG, data, line);
                         }
@@ -218,14 +221,24 @@ namespace BessilLanguage
                 case '>':
                     {
                         next();
+                        if(current == '=')
+                        {
+                            next();
+                            return new Token(TokenType.TOKEN_MORE_EQ, ">=" ,line);
+                        }
                         return new Token(TokenType.TOKEN_MORE, ">", line);
                     }
                 case '<':
                     {
                         next();
+                        if (current == '=')
+                        {
+                            next();
+                            return new Token(TokenType.TOKEN_LESS_EQ, "<=", line);
+                        }
                         return new Token(TokenType.TOKEN_LESS, ">", line);
                     }
-            }
+            }   
             Console.WriteLine($"Bad character in input: {current}");
             Environment.Exit(-1);
             return new Token(TokenType.BAD_TOKEN, current.ToString(), line);

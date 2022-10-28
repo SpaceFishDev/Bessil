@@ -25,15 +25,72 @@ namespace BessilLanguage
             }
 
         }
+        public Node parse_binary_expression(Token token, Node root, Node parent, int index, BinaryExpressionNode.t type)
+        {
+            switch (token.type)
+            {
+                case TokenType.TOKEN_ID:
+                    {
+                        if (root.Class == NodeClass.function)
+                        {
+                            if ((root as FunctionNode).ArgDefine)
+                            {
+                                BinaryExpressionNode n = new BinaryExpressionNode(
+                                                                new ConstantNode(
+                                                                    token.value,
+                                                                    token.line
+                                                                ),
+                                                                new ConstantNode(
+                                                                    tokens[index + 2].value,
+                                                                    token.line
+                                                                ),
+                                                                type,
+                                                                token.line
+                                                            );
+                                ((root as FunctionNode).ReturnValue as VariableNode).Data = n;
+                                return parse_r(root, n, index + 3);
+                            }
+                        }
+                        if (parent.Class == NodeClass.var)
+                        {
+                            BinaryExpressionNode n = new BinaryExpressionNode(
+                                new ConstantNode(
+                                    token.value,
+                                    token.line
+                                ),
+                                new ConstantNode(
+                                    tokens[index + 2].value,
+                                    token.line
+                                ),
+                                type,
+                                token.line
+                            );
+                            (parent as VariableNode).Data = n;
+                            return parse_r(root, n, index + 3);
+                        }
+                        BinaryExpressionNode node = new BinaryExpressionNode(
+                                            new ConstantNode(
+                                                token.value,
+                                                token.line
+                                            ),
+                                            new ConstantNode(
+                                                tokens[index + 2].value,
+                                                token.line
+                                            ),
+                                            type,
+                                            token.line
+                                        );
+                        (root as ScopeNode).AddChild(node);
+                        return parse_r(root, node, index + 3);
+                    }
+                    break;
+            }
+            return null;
+        }
         public Node parse_r(Node root, Node parent, int index)
         {
             if (index < tokens.Count)
             {
-                bool parent_is_root = false;
-                if (parent != null)
-                {
-                    parent_is_root = parent.Value == "GLOBAL";
-                }
                 Token token = tokens[index];
                 if (root.Class == NodeClass.function &&
                         (
@@ -52,15 +109,18 @@ namespace BessilLanguage
                 }
                 switch (token.type)
                 {
+                    #region END OF FILE TOKEN
                     case TokenType.TOKEN_ENDOFFILE:
                         {
                             return root;
                         }
+                    #endregion
+                    #region STRING TOKEN
                     case TokenType.TOKEN_STRING:
                         {
                             if (parent.Class == NodeClass.call)
                             {
-                                (parent as CallNode).Arguments.AddChild(new ConstantNode(token.value, token.line));
+                                (parent as CallNode).Arguments.AddChild(new ConstantNode("str:"+token.value, token.line));
                                 return parse_r(
                                     root,
                                     parent,
@@ -69,6 +129,8 @@ namespace BessilLanguage
                             }
                         }
                         break;
+                    #endregion
+                    #region COMMA TOKEN
                     case TokenType.TOKEN_COMMA:
                         {
                             if (parent.Class == NodeClass.call)
@@ -83,6 +145,8 @@ namespace BessilLanguage
                             Environment.Exit(-1);
                             return null;
                         }
+                    #endregion
+                    #region EXPRESSION TOKEN
                     case TokenType.TOKEN_EXPR:
                         {
                             if (parent.Class == NodeClass.call)
@@ -402,6 +466,8 @@ namespace BessilLanguage
                             (root as ScopeNode).AddChild(new ConstantNode(token.value, token.line));
                             return parse_r(root, parent, index + 2);
                         }
+                    #endregion
+                    #region MINUS TOKEN
                     case TokenType.TOKEN_MINUS:
                         {
                             if (index == 0)
@@ -426,6 +492,8 @@ namespace BessilLanguage
                             Environment.Exit(-1);
                         }
                         break;
+                    #endregion
+                    #region PLUS TOKEN
                     case TokenType.TOKEN_PLUS:
                         {
                             if (index == 0)
@@ -449,6 +517,8 @@ namespace BessilLanguage
                             Environment.Exit(-1);
                         }
                         break;
+                    #endregion
+                    #region STAR TOKEN
                     case TokenType.TOKEN_STAR:
                         {
                             if (tokens[index + 1].type == TokenType.TOKEN_EXPR || tokens[index + 1].type == TokenType.TOKEN_ID)
@@ -472,6 +542,8 @@ namespace BessilLanguage
                             Environment.Exit(-1);
                         }
                         break;
+                    #endregion
+                    #region SLASH TOKEN
                     case TokenType.TOKEN_SLASH:
                         {
                             if (index == 0)
@@ -499,6 +571,8 @@ namespace BessilLanguage
                             Environment.Exit(-1);
                         }
                         break;
+                    #endregion
+                    #region SEMICOLON TOKEN
                     case TokenType.TOKEN_SEMI:
                         {
                             if (index == 0)
@@ -519,6 +593,8 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
+                    #endregion
+                    #region FUNCTION TOKEN
                     case TokenType.TOKEN_FUNC:
                         {
                             if (tokens[index + 1].type != TokenType.TOKEN_ID)
@@ -562,6 +638,8 @@ namespace BessilLanguage
                                 index + 3
                             );
                         }
+                    #endregion
+                    #region BEGIN TOKEN
                     case TokenType.TOKEN_BEGIN:
                         {
                             if (parent.Class != NodeClass.function)
@@ -579,6 +657,8 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
+                    #endregion
+                    #region END TOKEN
                     case TokenType.TOKEN_END:
                         {
                             ScopeNode Root = root as ScopeNode;
@@ -596,6 +676,8 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
+                    #endregion
+                    #region BYTE TOKEN
                     case TokenType.TOKEN_BYTE:
                         {
                             if (root.Class == NodeClass.function && (root as FunctionNode).ArgDefine == true)
@@ -669,7 +751,7 @@ namespace BessilLanguage
                                     VariableNode n = new VariableNode(
                                         tokens[index + 1].value.ToString(),
                                         VariableNode.VariableClass.@byte,
-                                        new ConstantNode(tokens[index + 3].value, token.line),
+                                        new ConstantNode("str"+tokens[index + 3].value, token.line),
                                         token.line
                                     );
                                     (root as ScopeNode).AddChild(n);
@@ -691,6 +773,8 @@ namespace BessilLanguage
                             Console.WriteLine("UNREACHABLE, so explain to me, what? WHAT? how buddy, how did you manage to get the variable to be declared outside of global??? and outside of a function so its floating in space!? How did you? what?!?");
                             return null;
                         }
+                    #endregion
+                    #region TOKEN INT
                     case TokenType.TOKEN_INT:
                         {
                             if (root.Class == NodeClass.function && (root as FunctionNode).ArgDefine == true)
@@ -786,6 +870,8 @@ namespace BessilLanguage
                             Console.WriteLine("UNREACHABLE, so explain to me, what? WHAT? how buddy, how did you manage to get the variable to be declared outside of global??? and outside of a function so its floating in space!? How did you? what?!?");
                             return null;
                         }
+                    #endregion
+                    #region RETURN TOKEN
                     case TokenType.TOKEN_RETURN:
                         {
                             VariableNode node = new VariableNode(
@@ -807,6 +893,8 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
+                    #endregion
+                    #region ID TOKEN
                     case TokenType.TOKEN_ID:
                         {
                             if (root.Class == NodeClass.function)
@@ -817,71 +905,19 @@ namespace BessilLanguage
                                     {
                                         case TokenType.TOKEN_PLUS:
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(
-                                                        token.value,
-                                                        token.line
-                                                    ),
-                                                    new ConstantNode(
-                                                        tokens[index + 2].value,
-                                                        token.line
-                                                    ),
-                                                    BinaryExpressionNode.t.VARADD,
-                                                    token.line
-                                                );
-                                                ((root as FunctionNode).ReturnValue as VariableNode).Data = node;
-                                                return parse_r(root, node, index + 3);
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARADD);
                                             }
                                         case TokenType.TOKEN_MINUS:
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(
-                                                        token.value,
-                                                        token.line
-                                                    ),
-                                                    new ConstantNode(
-                                                        tokens[index + 2].value,
-                                                        token.line
-                                                    ),
-                                                    BinaryExpressionNode.t.VARSUB,
-                                                    token.line
-                                                );
-                                                ((root as FunctionNode).ReturnValue as VariableNode).Data = node;
-                                                return parse_r(root, node, index + 3);
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARSUB);
                                             }
                                         case TokenType.TOKEN_STAR:
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(
-                                                        token.value,
-                                                        token.line
-                                                    ),
-                                                    new ConstantNode(
-                                                        tokens[index + 2].value,
-                                                        token.line
-                                                    ),
-                                                    BinaryExpressionNode.t.VARMUL,
-                                                    token.line
-                                                );
-                                                ((root as FunctionNode).ReturnValue as VariableNode).Data = node;
-                                                return parse_r(root, node, index + 3);
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARMUL);
                                             }
                                         case TokenType.TOKEN_SLASH:
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(
-                                                        token.value,
-                                                        token.line
-                                                    ),
-                                                    new ConstantNode(
-                                                        tokens[index + 2].value,
-                                                        token.line
-                                                    ),
-                                                    BinaryExpressionNode.t.VARDIV,
-                                                    token.line
-                                                );
-                                                ((root as FunctionNode).ReturnValue as VariableNode).Data = node;
-                                                return parse_r(root, node, index + 3);
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARDIV);
                                             }
                                     }
                                 }
@@ -892,88 +928,25 @@ namespace BessilLanguage
                                 {
                                     case TokenType.TOKEN_PLUS:
                                         {
-                                            BinaryExpressionNode node = new BinaryExpressionNode(
-                                                new ConstantNode(
-                                                    token.value,
-                                                    token.line
-                                                ),
-                                                new ConstantNode(
-                                                    tokens[index + 2].value,
-                                                    token.line
-                                                ),
-                                                BinaryExpressionNode.t.VARADD,
-                                                token.line
-                                            );
-                                            (parent as VariableNode).Data = node;
-                                            return parse_r(root, node, index + 3);
+                                            return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARADD);
                                         }
                                     case TokenType.TOKEN_MINUS:
                                         {
-                                            BinaryExpressionNode node = new BinaryExpressionNode(
-                                                new ConstantNode(
-                                                    token.value,
-                                                    token.line
-                                                ),
-                                                new ConstantNode(
-                                                    tokens[index + 2].value,
-                                                    token.line
-                                                ),
-                                                BinaryExpressionNode.t.VARSUB,
-                                                token.line
-                                            );
-                                            (parent as VariableNode).Data = node;
-                                            return parse_r(root, node, index + 3);
+                                            return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARSUB);
                                         }
                                     case TokenType.TOKEN_STAR:
                                         {
-                                            BinaryExpressionNode node = new BinaryExpressionNode(
-                                                new ConstantNode(
-                                                    token.value,
-                                                    token.line
-                                                ),
-                                                new ConstantNode(
-                                                    tokens[index + 2].value,
-                                                    token.line
-                                                ),
-                                                BinaryExpressionNode.t.VARMUL,
-                                                token.line
-                                            );
-                                            (parent as VariableNode).Data = node;
-                                            return parse_r(root, node, index + 3);
+                                            return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARMUL);
                                         }
                                     case TokenType.TOKEN_SLASH:
                                         {
-                                            BinaryExpressionNode node = new BinaryExpressionNode(
-                                                new ConstantNode(
-                                                    token.value,
-                                                    token.line
-                                                ),
-                                                new ConstantNode(
-                                                    tokens[index + 2].value,
-                                                    token.line
-                                                ),
-                                                BinaryExpressionNode.t.VARDIV,
-                                                token.line
-                                            );
-                                            (parent as VariableNode).Data = node;
-                                            return parse_r(root, node, index + 3);
+                                            return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARDIV);
                                         }
                                     case TokenType.TOKEN_BOOLEQ:
                                         {
                                             if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(token.value, token.line),
-                                                    new ConstantNode(tokens[index + 2].value, token.line),
-                                                        BinaryExpressionNode.t.BOOLEQ,
-                                                    token.line
-                                                );
-                                                (parent as VariableNode).Data = node;
-                                                return parse_r(
-                                                    root,
-                                                    node,
-                                                    index + 3
-                                                );
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLEQ);
                                             }
                                             else
                                             {
@@ -994,18 +967,7 @@ namespace BessilLanguage
                                         {
                                             if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(token.value, token.line),
-                                                    new ConstantNode(tokens[index + 2].value, token.line),
-                                                        BinaryExpressionNode.t.BOOLMORE,
-                                                    token.line
-                                                );
-                                                (parent as VariableNode).Data = node;
-                                                return parse_r(
-                                                    root,
-                                                    node,
-                                                    index + 3
-                                                );
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLMORE);
                                             }
                                             else
                                             {
@@ -1026,18 +988,7 @@ namespace BessilLanguage
                                         {
                                             if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                             {
-                                                BinaryExpressionNode node = new BinaryExpressionNode(
-                                                    new ConstantNode(token.value, token.line),
-                                                    new ConstantNode(tokens[index + 2].value, token.line),
-                                                        BinaryExpressionNode.t.BOOLLESS,
-                                                    token.line
-                                                );
-                                                (parent as VariableNode).Data = node;
-                                                return parse_r(
-                                                    root,
-                                                    node,
-                                                    index + 3
-                                                );
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLLESS);
                                             }
                                             else
                                             {
@@ -1054,77 +1005,67 @@ namespace BessilLanguage
                                                 );
                                             }
                                         }
+                                    case TokenType.TOKEN_LESS_EQ:
+                                        {
+                                            if (tokens[index + 2].type == TokenType.TOKEN_ID)
+                                            {
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLLESSEQ);
+                                            }
+                                            else
+                                            {
+                                                BinaryExpressionNode node = new BinaryExpressionNode(
+                                                    new ConstantNode(token.value, token.line),
+                                                    null,
+                                                    BinaryExpressionNode.t.BOOLLESSEQ,
+                                                    token.line
+                                                );
+                                                return parse_r(
+                                                    root,
+                                                    node,
+                                                    index + 2
+                                                );
+                                            }
+                                        }
+                                    case TokenType.TOKEN_MORE_EQ:
+                                        {
+                                            if (tokens[index + 2].type == TokenType.TOKEN_ID)
+                                            {
+                                                return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLMOREEQ);
+                                            }
+                                            else
+                                            {
+                                                BinaryExpressionNode node = new BinaryExpressionNode(
+                                                    new ConstantNode(token.value, token.line),
+                                                    null,
+                                                    BinaryExpressionNode.t.BOOLMOREEQ,
+                                                    token.line
+                                                );
+                                                return parse_r(
+                                                    root,
+                                                    node,
+                                                    index + 2
+                                                );
+                                            }
+                                        }
                                 }
                             }
                             switch (tokens[index + 1].type)
                             {
                                 case TokenType.TOKEN_PLUS:
                                     {
-                                        BinaryExpressionNode node = new BinaryExpressionNode(
-                                            new ConstantNode(
-                                                token.value,
-                                                token.line
-                                            ),
-                                            new ConstantNode(
-                                                tokens[index + 2].value,
-                                                token.line
-                                            ),
-                                            BinaryExpressionNode.t.VARADD,
-                                            token.line
-                                        );
-                                        (root as ScopeNode).AddChild(node);
-                                        return parse_r(root, node, index + 3);
+                                        return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARADD);
                                     }
                                 case TokenType.TOKEN_MINUS:
                                     {
-                                        BinaryExpressionNode node = new BinaryExpressionNode(
-                                            new ConstantNode(
-                                                token.value,
-                                                token.line
-                                            ),
-                                            new ConstantNode(
-                                                tokens[index + 2].value,
-                                                token.line
-                                            ),
-                                            BinaryExpressionNode.t.VARSUB,
-                                            token.line
-                                        );
-                                        (root as ScopeNode).AddChild(node);
-                                        return parse_r(root, node, index + 3);
+                                        return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARSUB);
                                     }
                                 case TokenType.TOKEN_STAR:
                                     {
-                                        BinaryExpressionNode node = new BinaryExpressionNode(
-                                            new ConstantNode(
-                                                token.value,
-                                                token.line
-                                            ),
-                                            new ConstantNode(
-                                                tokens[index + 2].value,
-                                                token.line
-                                            ),
-                                            BinaryExpressionNode.t.VARMUL,
-                                            token.line
-                                        );
-                                        (root as ScopeNode).AddChild(node);
-                                        return parse_r(root, node, index + 3);
+                                        return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARMUL);
                                     }
                                 case TokenType.TOKEN_SLASH:
                                     {
-                                        BinaryExpressionNode node = new BinaryExpressionNode(
-                                            new ConstantNode(
-                                                token.value,
-                                                token.line
-                                            ),
-                                            new ConstantNode(
-                                                tokens[index + 2].value,
-                                                token.line
-                                            ),
-                                            BinaryExpressionNode.t.VARDIV,
-                                            token.line
-                                        );
-                                        (root as ScopeNode).AddChild(node);
-                                        return parse_r(root, node, index + 3);
+                                        return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.VARDIV);
                                     }
                             }
                             if (tokens[index + 1].type == TokenType.TOKEN_OPAREN)
@@ -1148,18 +1089,7 @@ namespace BessilLanguage
                             {
                                 if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                 {
-                                    BinaryExpressionNode node = new BinaryExpressionNode(
-                                        new ConstantNode(token.value, token.line),
-                                        new ConstantNode(tokens[index + 2].value, token.line),
-                                            BinaryExpressionNode.t.BOOLEQ,
-                                        token.line
-                                    );
-                                    (root as ScopeNode).AddChild(node);
-                                    return parse_r(
-                                        root,
-                                        node,
-                                        index + 3
-                                    );
+                                    return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLEQ);
                                 }
                                 else
                                 {
@@ -1180,18 +1110,7 @@ namespace BessilLanguage
                             {
                                 if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                 {
-                                    BinaryExpressionNode node = new BinaryExpressionNode(
-                                        new ConstantNode(token.value, token.line),
-                                        new ConstantNode(tokens[index + 2].value, token.line),
-                                         BinaryExpressionNode.t.BOOLLESS,
-                                        token.line
-                                    );
-                                    (root as ScopeNode).AddChild(node);
-                                    return parse_r(
-                                        root,
-                                        node,
-                                        index + 3
-                                    );
+                                    return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLLESS);
                                 }
                                 else
                                 {
@@ -1212,18 +1131,7 @@ namespace BessilLanguage
                             {
                                 if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                 {
-                                    BinaryExpressionNode node = new BinaryExpressionNode(
-                                        new ConstantNode(token.value, token.line),
-                                        new ConstantNode(tokens[index + 2].value, token.line),
-                                         BinaryExpressionNode.t.BOOLMORE,
-                                        token.line
-                                    );
-                                    (root as ScopeNode).AddChild(node);
-                                    return parse_r(
-                                        root,
-                                        node,
-                                        index + 3
-                                    );
+                                    return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.BOOLMORE);
                                 }
                                 else
                                 {
@@ -1244,18 +1152,7 @@ namespace BessilLanguage
                             {
                                 if (tokens[index + 2].type == TokenType.TOKEN_ID)
                                 {
-                                    BinaryExpressionNode node = new BinaryExpressionNode(
-                                        new ConstantNode(token.value, token.line),
-                                        new ConstantNode(tokens[index + 2].value, token.line),
-                                        BinaryExpressionNode.t.ASSIGN,
-                                        token.line
-                                    );
-                                    (root as ScopeNode).AddChild(node);
-                                    return parse_r(
-                                        root,
-                                        node,
-                                        index + 3
-                                    );
+                                    return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.ASSIGN);
                                 }
                                 else
                                 {
@@ -1274,6 +1171,8 @@ namespace BessilLanguage
                             }
                             return null;
                         }
+                    #endregion
+                    #region CPAREN TOKEN
                     case TokenType.TOKEN_CPAREN:
                         {
                             (root as ScopeNode).AddChild(parent);
@@ -1292,6 +1191,7 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
+                        #endregion
                 }
             }
             return root;

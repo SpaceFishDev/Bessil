@@ -32,7 +32,6 @@ namespace BessilLanguage
                     return includes(source);
                 }
             }
-            Console.WriteLine(source);
             return source;
         }
     }
