@@ -48,7 +48,7 @@ namespace BessilLanguage
                         {
                             return new Token(TokenType.TOKEN_BYTE, data, line);
                         }
-                    case "short":
+                    case "short": // 16 bit
                         {
                             return new Token(TokenType.TOKEN_SHORT, data, line);
                         }
@@ -69,6 +69,17 @@ namespace BessilLanguage
                     case "return":
                         {
                             return new Token(TokenType.TOKEN_RETURN, data, line);
+                        }
+                    case "asm":
+                        {
+                            int s = position;
+                            while (current != ';')
+                            {
+                                next();
+                            }
+                            int e = position;
+                            next();
+                            return new Token(TokenType.TOKEN_ASM, source.Substring(s, e - s), line);
                         }
                 }
                 return new Token(TokenType.TOKEN_ID, data, line);
@@ -102,9 +113,9 @@ namespace BessilLanguage
                 int end = position;
                 if(nx > 0)
                 {
-                    return new Token(TokenType.TOKEN_EXPR, int.Parse( source.Substring(start, end - start).Replace("0x", ""), System.Globalization.NumberStyles.HexNumber), line);
+                    return new Token(TokenType.TOKEN_EXPR, long.Parse( source.Substring(start, end - start).Replace("0x", ""), System.Globalization.NumberStyles.HexNumber), line);
                 }
-                return new Token(TokenType.TOKEN_EXPR, int.Parse(source.Substring(start, end - start)), line);
+                return new Token(TokenType.TOKEN_EXPR, long.Parse(source.Substring(start, end - start)), line);
             }
             if(current == '\n')
             {

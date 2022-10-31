@@ -13,6 +13,7 @@ namespace BessilLanguage
         {
             @byte,
             @int,
+            @long,
         }
         public VariableClass Type;
         public VariableNode(string title, VariableClass @class, Node data, int line)

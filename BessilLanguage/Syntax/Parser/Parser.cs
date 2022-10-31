@@ -31,22 +31,33 @@ namespace BessilLanguage
             {
                 case TokenType.TOKEN_ID:
                     {
+                        if (tokens[index + 1].type == TokenType.TOKEN_EQ)
+                        {
+                            BinaryExpressionNode n = new BinaryExpressionNode(
+                                new ConstantNode(token.value, token.line),
+                                null,
+                                BinaryExpressionNode.t.ASSIGN,
+                                token.line
+                            );
+                            (root as ScopeNode).AddChild(n);
+                            return parse_r(root, parent, index + 2);
+                        }
                         if (root.Class == NodeClass.function)
                         {
                             if ((root as FunctionNode).ArgDefine)
                             {
                                 BinaryExpressionNode n = new BinaryExpressionNode(
-                                                                new ConstantNode(
-                                                                    token.value,
-                                                                    token.line
-                                                                ),
-                                                                new ConstantNode(
-                                                                    tokens[index + 2].value,
-                                                                    token.line
-                                                                ),
-                                                                type,
-                                                                token.line
-                                                            );
+                                    new ConstantNode(
+                                        token.value,
+                                        token.line
+                                    ),
+                                    new ConstantNode(
+                                        tokens[index + 2].value,
+                                        token.line
+                                    ),
+                                    type,
+                                    token.line
+                                );
                                 ((root as FunctionNode).ReturnValue as VariableNode).Data = n;
                                 return parse_r(root, n, index + 3);
                             }
@@ -120,11 +131,18 @@ namespace BessilLanguage
                         {
                             if (parent.Class == NodeClass.call)
                             {
-                                (parent as CallNode).Arguments.AddChild(new ConstantNode("str:"+token.value, token.line));
+                                (parent as CallNode).Arguments.AddChild(new ConstantNode("str:" + token.value, token.line));
+                                if ((parent as CallNode).parent == null)
+                                {
+                                    (root as ScopeNode).AddChild(parent);
+                                    return parse_r(root, root, index + 2);
+                                }
+                                ((parent as CallNode).parent as BinaryExpressionNode).right = parent;
+                                (root as ScopeNode).AddChild((parent as CallNode).parent);
                                 return parse_r(
                                     root,
-                                    parent,
-                                    index + 1
+                                    (parent as CallNode).parent,
+                                    index + 2
                                 );
                             }
                         }
@@ -135,6 +153,7 @@ namespace BessilLanguage
                         {
                             if (parent.Class == NodeClass.call)
                             {
+                                (parent as CallNode).Arguments.AddChild(new ConstantNode(token.value, token.line));
                                 return parse_r(
                                     root,
                                     parent,
@@ -226,16 +245,23 @@ namespace BessilLanguage
                                     case TokenType.TOKEN_CPAREN:
                                         {
                                             (parent as CallNode).Arguments.AddChild(new ConstantNode(token.value, token.line));
-                                            (root as ScopeNode).AddChild(parent);
+                                            if ((parent as CallNode).parent == null)
+                                            {
+                                                (root as ScopeNode).AddChild(parent);
+                                                return parse_r(root, root, index + 2);
+                                            }
+                                            ((parent as CallNode).parent as BinaryExpressionNode).right = parent;
+                                            (root as ScopeNode).AddChild((parent as CallNode).parent);
                                             return parse_r(
                                                 root,
-                                                root,
+                                                (parent as CallNode).parent,
                                                 index + 2
                                             );
+                                            
                                         }
                                     default:
                                         {
-                                            TypeChecker.PutError($"Unexpected token after Expression: {tokens[index + 1]}.", tokens[index + 1].line, true);
+                                            TypeChecker.PutError($"Unexpected token after Expression: {tokens[index + 1].type}.", tokens[index + 1].line, true);
                                             return null;
                                         }
                                 }
@@ -402,7 +428,7 @@ namespace BessilLanguage
                                         }
                                     default:
                                         {
-                                            TypeChecker.PutError($"Unexpected token after Expression: {tokens[index + 1]}.", tokens[index + 1].line, true);
+                                            TypeChecker.PutError($"Unexpected token after Expression: {tokens[index + 1].type}.", tokens[index + 1].line, true);
                                             return null;
                                         }
                                 }
@@ -485,9 +511,29 @@ namespace BessilLanguage
                                 (parent as BinaryExpressionNode).right = node;
                                 return parse_r(root, node, index + 2);
                             }
+                            if (tokens[index + 1].type == TokenType.TOKEN_OPAREN)
+                            {
+                                BinaryExpressionNode node = new BinaryExpressionNode(
+                                    ((root as ScopeNode).children.ElementAt((root as ScopeNode).children.Count - 1).Class == NodeClass.paren) ? (parent as ScopeNode).children.ElementAt((parent as ScopeNode).children.Count - 1) : (parent as BinaryExpressionNode).right,
+                                    new ParenNode(token.line),
+                                    BinaryExpressionNode.t.SUB,
+                                    token.line
+                                ) ;
+                                if((root as ScopeNode).children.ElementAt((root as ScopeNode).children.Count - 1).Class == NodeClass.paren)
+                                {
+                                    (root as ScopeNode).children.RemoveAt((root as ScopeNode).children.Count - 1);
+                                    (root as ScopeNode).AddChild(node);
+                                }
+                                else
+                                {
+                                    (root as ScopeNode).AddChild(node);
+                                }
+                                (node.right as ParenNode).Root = root;
+                                return parse_r(node.right, node, index + 2);
+                            }
 
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Cannot add to type: {token.type} LN {token.line}");
+                            Console.WriteLine($"Cannot subtract from type: {token.type} LN {token.line}");
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Environment.Exit(-1);
                         }
@@ -521,6 +567,10 @@ namespace BessilLanguage
                     #region STAR TOKEN
                     case TokenType.TOKEN_STAR:
                         {
+                            if (index == 0)
+                            {
+                                TypeChecker.PutError($"Unexpected number of tokens.", tokens[index + 1].line, true);
+                            }
                             if (tokens[index + 1].type == TokenType.TOKEN_EXPR || tokens[index + 1].type == TokenType.TOKEN_ID)
                             {
                                 BinaryExpressionNode node = new BinaryExpressionNode(
@@ -530,14 +580,10 @@ namespace BessilLanguage
                                     token.line
                                 );
                                 (parent as BinaryExpressionNode).right = node;
-                                return parse_r(root,
-                                    node,
-                                    index + 2
-                                );
+                                return parse_r(root, node, index + 2);
                             }
-
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Cannot multiply type: {token.type} LN {token.line}");
+                            Console.WriteLine($"Cannot add to type: {token.type} LN {token.line}");
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Environment.Exit(-1);
                         }
@@ -553,13 +599,15 @@ namespace BessilLanguage
                             if (tokens[index + 1].type == TokenType.TOKEN_EXPR || tokens[index + 1].type == TokenType.TOKEN_ID)
                             {
                                 BinaryExpressionNode node = new BinaryExpressionNode(
-                                    (parent as BinaryExpressionNode).right,
+                                    (parent as BinaryExpressionNode),
                                     new ConstantNode(tokens[index + 1].value, token.line),
                                     (tokens[index + 1].type == TokenType.TOKEN_EXPR) ? BinaryExpressionNode.t.DIV : BinaryExpressionNode.t.VARDIV,
                                     token.line
                                 );
-                                (parent as BinaryExpressionNode).right = node;
-                                return parse_r(root,
+                                (root as ScopeNode).children.RemoveAt((root as ScopeNode).children.Count - 1);
+                                (root as ScopeNode).AddChild(node);
+                                return parse_r(
+                                    root,
                                     node,
                                     index + 2
                                 );
@@ -607,6 +655,8 @@ namespace BessilLanguage
                             }
                             switch (tokens[index + 2].type)
                             {
+                                case TokenType.TOKEN_LONG:
+                                case TokenType.TOKEN_SHORT:
                                 case TokenType.TOKEN_BYTE:
                                 case TokenType.TOKEN_INT:
                                     {
@@ -774,6 +824,97 @@ namespace BessilLanguage
                             return null;
                         }
                     #endregion
+                    #region TOKEN LONG
+                    case TokenType.TOKEN_LONG:
+                        {
+                            if (root.Class == NodeClass.function && (root as FunctionNode).ArgDefine == true)
+                            {
+                                if (index + 1 > tokens.Count)
+                                {
+                                    TypeChecker.PutError($"Argument declaration enough arguments REQUIRED : VARTYPE NAME ;.", token.line, true);
+                                }
+                                if (tokens[index + 1].type != TokenType.TOKEN_ID)
+                                {
+                                    TypeChecker.PutError("Argument declaration without a name.", token.line, true);
+                                }
+                                VariableNode node = new VariableNode(
+                                    tokens[index + 1].value.ToString(),
+                                    VariableNode.VariableClass.@long,
+                                    new ConstantNode(null, token.line),
+                                    token.line
+                                );
+                                ((root as FunctionNode).Arguments as ScopeNode).AddChild(node);
+                                return parse_r(root,
+                                    parent,
+                                    index + 2
+                                );
+                            }
+                            if (root.Class == NodeClass.scope || root.Class == NodeClass.function)
+                            {
+                                if (index + 3 > tokens.Count)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"Variable declaration enough arguments REQUIRED : VARTYPE NAME = DECLARATION OR NULL;. LN {token.line}");
+                                    Console.ForegroundColor = ConsoleColor.Gray;
+                                    Environment.Exit(-1);
+                                }
+                                if (tokens[index + 1].type != TokenType.TOKEN_ID)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"Variable declaration without a name. LN {token.line}");
+                                    Console.ForegroundColor = ConsoleColor.Gray;
+                                    Environment.Exit(-1);
+                                }
+                                if (tokens[index + 2].type != TokenType.TOKEN_EQ)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"Variable declaration without a '=' sign. LN {token.line}");
+                                    Console.ForegroundColor = ConsoleColor.Gray;
+                                    Environment.Exit(-1);
+                                }
+                                if (tokens[index + 3].type == TokenType.TOKEN_NULL)
+                                {
+                                    VariableNode n = new VariableNode(
+                                        tokens[index + 1].value.ToString(),
+                                        VariableNode.VariableClass.@long,
+                                        new ConstantNode(null, token.line),
+                                        token.line
+                                    );
+                                    (root as ScopeNode).AddChild(n);
+                                    return parse_r(
+                                        root,
+                                        parent,
+                                        index + 4
+                                    );
+                                }
+                                if (tokens[index + 3].type == TokenType.TOKEN_STRING)
+                                {
+                                    VariableNode n = new VariableNode(
+                                        tokens[index + 1].value.ToString(),
+                                        VariableNode.VariableClass.@long,
+                                        new ConstantNode(tokens[index + 3].value, token.line),
+                                        token.line
+                                    );
+                                    (root as ScopeNode).AddChild(n);
+                                    return parse_r(root, n, index + 4);
+                                }
+                                VariableNode node = new VariableNode(
+                                    tokens[index + 1].value.ToString(),
+                                    VariableNode.VariableClass.@long,
+                                    null,
+                                    token.line
+                                );
+                                (root as ScopeNode).AddChild(node);
+                                return parse_r(
+                                    root,
+                                    node,
+                                    index + 3
+                                );
+                            }
+                            return null;
+                            Console.WriteLine("UNREACHABLE, so explain to me, what? WHAT? how buddy, how did you manage to get the variable to be declared outside of global??? and outside of a function so its floating in space!? How did you? what?!?");
+                        }
+                    #endregion
                     #region TOKEN INT
                     case TokenType.TOKEN_INT:
                         {
@@ -867,8 +1008,8 @@ namespace BessilLanguage
                                     index + 3
                                 );
                             }
-                            Console.WriteLine("UNREACHABLE, so explain to me, what? WHAT? how buddy, how did you manage to get the variable to be declared outside of global??? and outside of a function so its floating in space!? How did you? what?!?");
                             return null;
+                            Console.WriteLine("UNREACHABLE, so explain to me, what? WHAT? how buddy, how did you manage to get the variable to be declared outside of global??? and outside of a function so its floating in space!? How did you? what?!?");
                         }
                     #endregion
                     #region RETURN TOKEN
@@ -1071,6 +1212,15 @@ namespace BessilLanguage
                             if (tokens[index + 1].type == TokenType.TOKEN_OPAREN)
                             {
                                 CallNode node = new CallNode(token.value.ToString(), token.line);
+                                if(parent.Class == NodeClass.var) {
+                                    (parent as VariableNode).Data = node;
+                                    node.parent = parent;
+                                }
+                                else if (parent.Class == NodeClass.assign)
+                                {
+                                    (parent as BinaryExpressionNode).right = node;
+                                    node.parent = parent;
+                                }
                                 return parse_r(root, node, index + 2);
                             }
                             if (root.Class == NodeClass.function)
@@ -1150,7 +1300,7 @@ namespace BessilLanguage
                             }
                             if (tokens[index + 1].type == TokenType.TOKEN_EQ)
                             {
-                                if (tokens[index + 2].type == TokenType.TOKEN_ID)
+                                if (tokens[index + 2].type == TokenType.TOKEN_ID && tokens[index + 3].type != TokenType.TOKEN_OPAREN)
                                 {
                                     return parse_binary_expression(token, root, parent, index, BinaryExpressionNode.t.ASSIGN);
                                 }
@@ -1172,14 +1322,41 @@ namespace BessilLanguage
                             return null;
                         }
                     #endregion
+                    #region OPAREN TOKEN
+                    case TokenType.TOKEN_OPAREN:
+                        {
+                            ParenNode n = new ParenNode(token.line);
+                            n.Root = root;
+                            return parse_r(n, n, index + 1);
+                        }
+                    #endregion
                     #region CPAREN TOKEN
                     case TokenType.TOKEN_CPAREN:
                         {
+                            if(
+                                parent.Class == NodeClass.sub 
+                                || parent.Class == NodeClass.mul 
+                                || parent.Class == NodeClass.add 
+                                || parent.Class == NodeClass.div
+                            )
+                            {
+                                return parse_r((root as ScopeNode).Root, parent , index + 1);
+                            }
+                            
+                            if(root.Class == NodeClass.paren)
+                            {
+                                ((root as ScopeNode).Root as ScopeNode).AddChild(root);
+                                return parse_r(
+                                     (root as ScopeNode).Root,
+                                     (root as ScopeNode).Root,
+                                     index + 1
+                                );
+                            }
                             (root as ScopeNode).AddChild(parent);
                             return parse_r(
                                 root,
                                 root,
-                                index + 2
+                                index + 1
                             );
                         }
                     default:
@@ -1191,7 +1368,15 @@ namespace BessilLanguage
                                 index + 1
                             );
                         }
-                        #endregion
+                    #endregion
+                    #region INLINE ASSEMBLY
+                    case TokenType.TOKEN_ASM:
+                        {
+                            AssemblyNode node = new AssemblyNode(token.value, token.line);
+                            (root as ScopeNode).AddChild(node);
+                            return parse_r(root, parent, index + 1);
+                        }
+                    #endregion
                 }
             }
             return root;

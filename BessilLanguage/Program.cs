@@ -10,12 +10,11 @@ namespace BessilLanguage
             Stopwatch sw = new Stopwatch();
             sw.Start();
             string input = PreLexer.includes(File.ReadAllText("main.bsl"));
-            Parser parser = new Parser(input);
-            Node root = parser.parse();
-            PrettyPrint(root);
+            Compiler compiler = new Compiler(input, "x86");
+            Console.WriteLine(compiler.Assembly);
             sw.Stop();
-            Console.WriteLine($"Parse Time: {sw.Elapsed.TotalMilliseconds} ms");
-            Console.ReadKey ();
+            Console.WriteLine($"Compile Time: {sw.Elapsed.TotalMilliseconds} ms");
+
         }
 
         static void PrintR(Node root, int level)
@@ -27,6 +26,10 @@ namespace BessilLanguage
             {   
                 Console.WriteLine($"NODE( {root.Class}, {(root as VariableNode).Type}, {root.Value})");
             }
+            else if(root.Class == NodeClass.function)
+            {
+                Console.WriteLine($"NODE( {root.Class}, {(root as FunctionNode).ReturnType}, {root.Value})");
+            }
             else
             {
                 Console.WriteLine($"NODE( {root.Class}, {root.Value} )");
@@ -37,7 +40,7 @@ namespace BessilLanguage
                 PrintR(Child, level);
             }
         }
-        static void PrettyPrint(Node root)
+        public static void PrettyPrint(Node root)
         {
             PrintR(root, 0);
         }

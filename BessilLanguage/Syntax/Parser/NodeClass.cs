@@ -22,5 +22,6 @@
         var,
         paren,
         function,
+        assembly,
     }
 }

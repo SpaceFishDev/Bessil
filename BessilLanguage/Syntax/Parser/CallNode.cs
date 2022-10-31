@@ -9,6 +9,7 @@ namespace BessilLanguage
     internal class CallNode : Node
     {
         public ScopeNode Arguments;
+        public Node parent = null;
 
         public CallNode(string function, int line)
         {
