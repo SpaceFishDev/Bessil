@@ -37,6 +37,9 @@ namespace BessilLanguage
         TOKEN_LESS_EQ,
         TOKEN_SHORT,
         TOKEN_ASM,
+        TOKEN_EXTERN,
+        TOKEN_BOOT,
+        TOKEN_IF,
     }
     public class Token
     {

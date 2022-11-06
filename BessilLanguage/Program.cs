@@ -6,16 +6,22 @@ namespace BessilLanguage
     {
         static void Main(string[] Args)
         {
-           
             Stopwatch sw = new Stopwatch();
             sw.Start();
             string input = PreLexer.includes(File.ReadAllText("main.bsl"));
-            Compiler compiler = new Compiler(input, "x86");
-            Console.WriteLine(compiler.Assembly);
+            Compiler compiler = new Compiler(input, "bc", "out.binary");
+            List<byte> bytes = new List<byte>();
+            foreach(byte[] b in compiler.CompiledBytes)
+            {
+                foreach(byte b2 in b)
+                {
+                    bytes.Add(b2);
+                }
+            }
+            File.WriteAllBytes("out.binary",bytes.ToArray());
             sw.Stop();
             Console.WriteLine($"Compile Time: {sw.Elapsed.TotalMilliseconds} ms");
-
-        }
+        }   
 
         static void PrintR(Node root, int level)
         {

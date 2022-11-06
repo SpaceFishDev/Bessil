@@ -23,5 +23,8 @@
         paren,
         function,
         assembly,
+        @extern,
+        boot,
+        if_node,
     }
 }

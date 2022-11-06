@@ -44,6 +44,10 @@ namespace BessilLanguage
         public static VariableNode.VariableClass GetType(Node n)
         {
             VariableNode.VariableClass type = new VariableNode.VariableClass();
+            if(n == null)
+            {
+                return VariableNode.VariableClass.@byte;
+            }
             switch (n.Class)
             {
                 case NodeClass.add:
@@ -98,8 +102,10 @@ namespace BessilLanguage
             }
             PutError("No entry point defined. Function main must be defined to create executable.", 0, false);
         }
-        public static List<(string n , VariableNode.VariableClass type)> Variables = new List<(string, VariableNode.VariableClass)>();
+        public static List<(string n , VariableNode.VariableClass type, string func)> Variables = new List<(string, VariableNode.VariableClass, string func)>();
         public static List<(string n, FunctionNode.ReturnTypes type, List<VariableNode.VariableClass> args)> Functions = new List<(string, FunctionNode.ReturnTypes, List<VariableNode.VariableClass>)>();
+        public static string currentFunc = "glbl";
+        static int ifindex = 0;
         private static void TypeCheckTree(Node root)
         {
             if(root == null)
@@ -108,9 +114,19 @@ namespace BessilLanguage
             }   
             switch (root.Class)
             {
+                case NodeClass.if_node:
+                    {
+                        currentFunc = ifindex.ToString();
+                        ++ifindex;
+                    } break;
                 case NodeClass.function:
                     {
                         FunctionNode func = root as FunctionNode;
+                        if(func.Value == "main")
+                        {
+                            Console.WriteLine("Hello.");
+                        }
+                        currentFunc = func.Value.ToString();
                         foreach(var fun in Functions)
                         {
                             if(fun.n == func.Value.ToString())
@@ -124,7 +140,6 @@ namespace BessilLanguage
                             a.Add((Child as VariableNode).Type);
                         }
                         Functions.Add((func.Value.ToString(), func.ReturnType, a));
-                        
                     }break;
                 case NodeClass.call:
                     {
@@ -175,7 +190,7 @@ namespace BessilLanguage
                         string title = (root as VariableNode).Value.ToString();
                         foreach(var n in Variables)
                         {
-                            if(n.n == title)
+                            if(n.n == title && n.func == currentFunc)
                             {
                                 PutError($"Variable {title} already exists.", root.Line, true);
                             }
@@ -184,7 +199,7 @@ namespace BessilLanguage
                         {
                             PutError($"Variable of type {(root as VariableNode).Type} initalized with type {GetType((root as VariableNode).Data)}.", root.Line, true);
                         }
-                        Variables.Add((title, (root as VariableNode).Type));
+                        Variables.Add((title, (root as VariableNode).Type, currentFunc));
                     } break;
             }
             end:

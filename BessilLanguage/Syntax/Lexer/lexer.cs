@@ -81,6 +81,21 @@ namespace BessilLanguage
                             next();
                             return new Token(TokenType.TOKEN_ASM, source.Substring(s, e - s), line);
                         }
+                    case "extern":
+                        {
+                            int s = position;
+                            while (current != ';' && current != '\n')
+                            {
+                                next();
+                            }
+                            int e = position;
+                            next();
+                            return new Token(TokenType.TOKEN_EXTERN, source.Substring(s, e - s), line);
+                        }
+                    case "if":
+                        {
+                            return new Token(TokenType.TOKEN_IF, data, line);
+                        }
                 }
                 return new Token(TokenType.TOKEN_ID, data, line);
             }

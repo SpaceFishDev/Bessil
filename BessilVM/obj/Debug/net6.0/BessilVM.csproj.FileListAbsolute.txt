@@ -1,0 +1,15 @@
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.csproj.AssemblyReference.cache
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.GeneratedMSBuildEditorConfig.editorconfig
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.AssemblyInfoInputs.cache
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.AssemblyInfo.cs
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.csproj.CoreCompileInputs.cache
+D:\Csharp\BessilLanguage\BessilVM\bin\Debug\net6.0\BessilVM.exe
+D:\Csharp\BessilLanguage\BessilVM\bin\Debug\net6.0\BessilVM.deps.json
+D:\Csharp\BessilLanguage\BessilVM\bin\Debug\net6.0\BessilVM.runtimeconfig.json
+D:\Csharp\BessilLanguage\BessilVM\bin\Debug\net6.0\BessilVM.dll
+D:\Csharp\BessilLanguage\BessilVM\bin\Debug\net6.0\BessilVM.pdb
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.dll
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\refint\BessilVM.dll
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.pdb
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\BessilVM.genruntimeconfig.cache
+D:\Csharp\BessilLanguage\BessilVM\obj\Debug\net6.0\ref\BessilVM.dll
